@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.io import wavfile
+import hashlib
 
 
 class A51Cipher:
@@ -108,6 +109,21 @@ class A51Cipher:
         return result
 
 
+def string_to_23bit_key(key_string):
+    """Convert any string to a 23-bit integer key."""
+    # Use SHA-256 to hash the string
+    hash_obj = hashlib.sha256(key_string.encode())
+    hash_hex = hash_obj.hexdigest()
+
+    # Take first 6 hex characters (24 bits) and convert to int
+    key_int = int(hash_hex[:6], 16)
+
+    # Mask to 23 bits
+    key_23bit = key_int & 0x7FFFFF  # 23 bits mask (2^23 - 1)
+
+    return key_23bit
+
+
 def process_audio(input_file, output_file, key):
     """Process an audio file using A5/1 cipher."""
     # Read the WAV file
@@ -151,26 +167,24 @@ def main():
     ciphertext_file = "ciphertext.wav"
     plaintext_file = "plaintext.wav"
 
-    # Default key (23-bit)
-    default_key = 0b10101010101010101010101
+    # Default key string
+    default_key_string = "default_key"
+    default_key = string_to_23bit_key(default_key_string)
 
     # Ask user for a key
-    try:
-        key_input = input("Enter a 23-bit key (decimal number) or press Enter for default key: ")
+    key_input = input("Enter a key (can include letters, numbers, special characters) or press Enter for default key: ")
 
-        if key_input.strip():
-            key = int(key_input)
-            # Ensure key is 23 bits by masking
-            key = key & 0x7FFFFF  # 23 bits mask (2^23 - 1)
-        else:
-            key = default_key
-            print(f"Using default key: {bin(default_key)[2:].zfill(23)}")
-    except ValueError:
+    if key_input.strip():
+        # Convert string to 23-bit integer
+        key = string_to_23bit_key(key_input)
+        print(f"Key string: \"{key_input}\"")
+    else:
         key = default_key
-        print(f"Invalid input. Using default key: {bin(default_key)[2:].zfill(23)}")
+        print(f"Using default key string: \"{default_key_string}\"")
 
-    # Display the actual key being used in binary
-    print(f"Using key (binary): {bin(key)[2:].zfill(23)}")
+    # Display the key in binary format
+    key_binary = bin(key)[2:].zfill(23)
+    print(f"Key converted to 23-bit binary: {key_binary}")
 
     try:
         # Step 1: Encrypt input.wav to ciphertext.wav

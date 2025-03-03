@@ -1,11 +1,10 @@
 import numpy as np
 from scipy.io import wavfile
-import argparse
 
 
 class A51Cipher:
     def __init__(self, key):
-        """Initialize the A5/1 cipher with a 64-bit key."""
+        """Initialize the A5/1 cipher with a 23-bit key."""
         # Register sizes for A5/1
         self.R1_SIZE = 19
         self.R2_SIZE = 22
@@ -30,12 +29,12 @@ class A51Cipher:
         self._key_setup(key)
 
     def _key_setup(self, key):
-        """Load the key into registers."""
-        # Convert key to binary
-        key_bits = [int(bit) for bit in bin(key)[2:].zfill(64)]
+        """Load the 23-bit key into registers."""
+        # Convert key to binary and ensure it's 23 bits
+        key_bits = [int(bit) for bit in bin(key)[2:].zfill(23)]
 
         # Mix the key into all three registers
-        for i in range(64):
+        for i in range(23):
             feedback_bit = key_bits[i]
 
             # XOR the feedback bit with the feedback taps
@@ -109,8 +108,8 @@ class A51Cipher:
         return result
 
 
-def encode_audio(input_file, output_file, key):
-    """Encode an audio file using A5/1 cipher."""
+def process_audio(input_file, output_file, key):
+    """Process an audio file using A5/1 cipher."""
     # Read the WAV file
     sample_rate, audio_data = wavfile.read(input_file)
 
@@ -130,41 +129,69 @@ def encode_audio(input_file, output_file, key):
     # Convert audio data to bytes
     audio_bytes = audio_data.tobytes()
 
-    # Encrypt the audio data
-    encrypted_bytes = cipher.encrypt_decrypt(audio_bytes)
+    # Process the audio data
+    processed_bytes = cipher.encrypt_decrypt(audio_bytes)
 
     # Convert back to numpy array
-    encrypted_audio = np.frombuffer(encrypted_bytes, dtype=np.uint8)
+    processed_audio = np.frombuffer(processed_bytes, dtype=np.uint8)
 
     # Reshape if original was multi-channel
     if len(audio_data.shape) > 1:
-        encrypted_audio = encrypted_audio.reshape(audio_data.shape)
+        processed_audio = processed_audio.reshape(audio_data.shape)
 
-    # Save the encrypted audio
-    wavfile.write(output_file, sample_rate, encrypted_audio)
+    # Save the processed audio
+    wavfile.write(output_file, sample_rate, processed_audio)
 
-    print(f"Audio file encrypted and saved to {output_file}")
+    print(f"Audio file processed and saved to {output_file}")
 
 
-def decode_audio(input_file, output_file, key):
-    """Decode an A5/1 encoded audio file."""
-    # The encryption and decryption process is symmetric (XOR with keystream)
-    # So we can use the same function
-    encode_audio(input_file, output_file, key)
-    print(f"Audio file decrypted and saved to {output_file}")
+def main():
+    # Fixed input and output file names
+    input_file = "input.wav"
+    ciphertext_file = "ciphertext.wav"
+    plaintext_file = "plaintext.wav"
+
+    # Default key (23-bit)
+    default_key = 0b10101010101010101010101
+
+    # Ask user for a key
+    try:
+        key_input = input("Enter a 23-bit key (decimal number) or press Enter for default key: ")
+
+        if key_input.strip():
+            key = int(key_input)
+            # Ensure key is 23 bits by masking
+            key = key & 0x7FFFFF  # 23 bits mask (2^23 - 1)
+        else:
+            key = default_key
+            print(f"Using default key: {bin(default_key)[2:].zfill(23)}")
+    except ValueError:
+        key = default_key
+        print(f"Invalid input. Using default key: {bin(default_key)[2:].zfill(23)}")
+
+    # Display the actual key being used in binary
+    print(f"Using key (binary): {bin(key)[2:].zfill(23)}")
+
+    try:
+        # Step 1: Encrypt input.wav to ciphertext.wav
+        print("\nStep 1: Encrypting input.wav to ciphertext.wav")
+        process_audio(input_file, ciphertext_file, key)
+
+        # Step 2: Decrypt ciphertext.wav to plaintext.wav
+        print("\nStep 2: Decrypting ciphertext.wav to plaintext.wav")
+        process_audio(ciphertext_file, plaintext_file, key)
+
+        print("\nProcess completed successfully!")
+        print(f"Original file: {input_file}")
+        print(f"Encrypted file: {ciphertext_file}")
+        print(f"Decrypted file: {plaintext_file}")
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        print("Make sure input.wav exists in the current directory.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="A5/1 Audio Encoder/Decoder")
-    parser.add_argument('action', choices=['encode', 'decode'], help='Action to perform')
-    parser.add_argument('input_file', help='Input audio file (.wav)')
-    parser.add_argument('output_file', help='Output audio file (.wav)')
-    parser.add_argument('--key', type=int, default=0x0123456789ABCDEF,
-                        help='64-bit key in hexadecimal (default: 0x0123456789ABCDEF)')
-
-    args = parser.parse_args()
-
-    if args.action == 'encode':
-        encode_audio(args.input_file, args.output_file, args.key)
-    else:  # decode
-        decode_audio(args.input_file, args.output_file, args.key)
+    main()

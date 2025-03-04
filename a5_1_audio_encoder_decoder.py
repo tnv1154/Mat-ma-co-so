@@ -5,7 +5,7 @@ import hashlib
 
 class A51Cipher:
     def __init__(self, key):
-        # Khởi tạo mã hóa A5/1 bằng khóa 23 bit
+        # Khởi tạo mã hóa A5/1 bằng khóa 64 bit
         # khởi tạo các thanh ghi có kích thước 19, 22, 23
         self.R1_SIZE = 19
         self.R2_SIZE = 22
@@ -30,12 +30,12 @@ class A51Cipher:
         self._key_setup(key)
 
     def _key_setup(self, key):
-        """Đưa key 23 bit vào thanh ghi"""
-        # Chuyển key về dạng nhị phân 23 bit
-        key_bits = [int(bit) for bit in bin(key)[2:].zfill(23)]
+        """Đưa key 64 bit vào thanh ghi"""
+        # Chuyển key về dạng nhị phân 64 bit
+        key_bits = [int(bit) for bit in bin(key)[2:].zfill(64)]
 
-        # Trộn khóa vào 3 thanh ghi
-        for i in range(23):
+        # Trộn khóa vào 3 thanh ghi - xử lý 64 bit
+        for i in range(64):
             feedback_bit = key_bits[i]
 
             # XOR the feedback bit with the feedback taps
@@ -110,21 +110,18 @@ class A51Cipher:
         return result
 
 
-def string_to_23bit_key(key_string):
-    """Chuyển đổi bất kỳ chuỗi nào thành khóa số nguyên 23 bit"""
+def string_to_64bit_key(key_string):
+    """Chuyển đổi bất kỳ chuỗi nào thành khóa số nguyên 64 bit"""
     # Sử dụng SHA-256 để băm chuỗi
     # Tạo đối tượng băm SHA-256 từ chuỗi key_string sau khi mã hóa nó thành bytes.
     hash_obj = hashlib.sha256(key_string.encode())
     # Lấy giá trị băm (hash) dưới dạng chuỗi hexa (hexadecimal string). Giá trị băm này sẽ dài 64 ký tự hexa (256 bits).
     hash_hex = hash_obj.hexdigest()
 
-    # Lấy 6 ký tự hexa đầu tiên (24 bits) và chuyển đổi thành số nguyên
-    key_int = int(hash_hex[:6], 16)
+    # Lấy 16 ký tự hexa đầu tiên (64 bits) và chuyển đổi thành số nguyên
+    key_int = int(hash_hex[:16], 16)
 
-    # Áp dụng mặt nạ để lấy khóa 23 bit
-    key_23bit = key_int & 0x7FFFFF # Áp dụng phép AND bitwise để giữ lại 23 bit thấp nhất của key_int. Nếu key_int có hơn 23 bit, các bit cao hơn sẽ bị loại bỏ.
-    #0x7FFFFF là mặt nạ 23 bit (2^23 - 1), dưới dạng hexa.
-    return key_23bit
+    return key_int
 
 
 def process_audio(input_file, output_file, key):
@@ -166,22 +163,22 @@ def main():
 
     # Key mặc định
     default_key_string = "default_key"
-    default_key = string_to_23bit_key(default_key_string)
+    default_key = string_to_64bit_key(default_key_string)
 
     # Nhập key tùy chọn
     key_input = input("Nhập key (xâu bất kỳ) hoặc enter để dùng key mặc định: ")
 
     if key_input.strip():
-        # Chuyển đổi chuỗi thành số nguyên 23 bit
-        key = string_to_23bit_key(key_input)
+        # Chuyển đổi chuỗi thành số nguyên 64 bit
+        key = string_to_64bit_key(key_input)
         print(f"Key string: \"{key_input}\"")
     else:
         key = default_key
         print(f"Key mặc định: \"{default_key_string}\"")
 
     # Hiển thị key ở định dạng nhị phân
-    key_binary = bin(key)[2:].zfill(23)
-    print(f"Key dạng nhị phân 23 bit: {key_binary}")
+    key_binary = bin(key)[2:].zfill(64)
+    print(f"Key dạng nhị phân 64 bit: {key_binary}")
 
     try:
         # Bước 1: Mã hóa input.wav thành ciphertext.wav

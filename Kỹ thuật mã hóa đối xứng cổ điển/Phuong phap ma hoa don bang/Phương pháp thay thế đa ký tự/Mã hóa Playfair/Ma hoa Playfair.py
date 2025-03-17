@@ -95,7 +95,23 @@ def playfair_decrypt(ciphertext, key):
         else:
             plaintext += pair
     
-    return plaintext
+    # Xử lý loại bỏ các ký tự 'X' được thêm vào trong quá trình mã hóa
+    result = ""
+    i = 0
+    while i < len(plaintext):
+        if i < len(plaintext) - 1 and plaintext[i+1] == 'X' and (i+2 < len(plaintext) and plaintext[i] == plaintext[i+2]):
+            # Nếu có mẫu "aXa", loại bỏ 'X'
+            result += plaintext[i]
+            i += 2  # Bỏ qua 'X'
+        elif i == len(plaintext) - 2 and plaintext[i+1] == 'X':
+            # Nếu 'X' là ký tự cuối cùng của cặp cuối cùng, loại bỏ nó
+            result += plaintext[i]
+            i += 2
+        else:
+            result += plaintext[i]
+            i += 1
+    
+    return result
 
 def print_matrix(matrix):
     # In ma trận Playfair để kiểm tra

@@ -93,13 +93,12 @@ def input_key_matrix(n):
     for i in range(n):
         while True:
             try:
-                row_input = input(f"Nhập hàng {i+1} (các số cách nhau bởi dấu cách): ")
+                row_input = input()
                 row_values = [int(x) % 26 for x in row_input.split()]
                 
                 if len(row_values) != n:
                     print(f"Vui lòng nhập đúng {n} số cho mỗi hàng.")
                     continue
-                
                 matrix[i] = row_values
                 break
             except ValueError:

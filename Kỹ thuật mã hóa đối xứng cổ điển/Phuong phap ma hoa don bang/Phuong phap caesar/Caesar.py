@@ -4,11 +4,9 @@ def encrypt_text(plain_text, key):
         if character.isalpha():
             # Xác định chữ cái là in hoa hay in thường
             base = ord('A') if character.isupper() else ord('a')
-            # Mã hóa chỉ áp dụng cho chữ cái
             cipher_character = chr((ord(character) - base + key) % 26 + base)
             cipher_text += cipher_character
         else:
-            # Giữ nguyên các ký tự không phải chữ cái
             cipher_text += character
     return cipher_text
 
@@ -18,11 +16,9 @@ def decrypt_text(cipher_text, key):
         if character.isalpha():
             # Xác định chữ cái là in hoa hay in thường
             base = ord('A') if character.isupper() else ord('a')
-            # Giải mã chỉ áp dụng cho chữ cái
             plain_character = chr((ord(character) - base - key) % 26 + base)
             plain_text += plain_character
         else:
-            # Giữ nguyên các ký tự không phải chữ cái
             plain_text += character
     return plain_text
 

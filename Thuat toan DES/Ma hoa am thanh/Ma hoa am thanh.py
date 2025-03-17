@@ -343,11 +343,6 @@ def main():
     # Đường dẫn file input
     input_file = "input.wav"
     
-    # Kiểm tra file input có tồn tại không
-    if not os.path.exists(input_file):
-        print(f"Lỗi: File {input_file} không tồn tại!")
-        return
-    
     # Nhập khóa
     key = input("Nhập khóa (8 ký tự): ")
     

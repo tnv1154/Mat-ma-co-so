@@ -17,7 +17,7 @@ def matrix_mod_inverse(matrix, modulus):
     
     # Chuyển đổi về numpy array
     result = np.array(matrix_inverse).astype(int)
-    
+
     return result
 
 def hill_encrypt(plaintext, key_matrix):
@@ -91,53 +91,41 @@ def input_key_matrix(n):
     matrix = np.zeros((n, n), dtype=int)
     
     for i in range(n):
-        while True:
-            try:
-                row_input = input()
-                row_values = [int(x) % 26 for x in row_input.split()]
-                
-                if len(row_values) != n:
-                    print(f"Vui lòng nhập đúng {n} số cho mỗi hàng.")
-                    continue
-                matrix[i] = row_values
-                break
-            except ValueError:
-                print("Vui lòng nhập các số nguyên.")
-    
+        row = list(map(int, input().split()))
+        matrix[i] = row
+
     return matrix
+
+def is_invertible(matrix, modulus=26):
+    """Kiểm tra ma trận có khả nghịch theo modulo hay không"""
+    try:
+        matrix_mod_inverse(matrix, modulus)
+        return True
+    except ValueError:
+        return False
 
 def main():
     print("CHƯƠNG TRÌNH MÃ HÓA VÀ GIẢI MÃ HILL")
-    
+
     # Nhập kích thước ma trận
-    while True:
-        try:
-            n = int(input("Nhập kích thước ma trận khóa (2 hoặc 3): "))
-            if n in [2, 3]:
-                break
-            else:
-                print("Kích thước ma trận phải là 2 hoặc 3.")
-        except ValueError:
-            print("Vui lòng nhập một số nguyên.")
-    
+    n = int(input("Nhập kích thước ma trận khóa (2 hoặc 3): "))
+
     # Nhập ma trận khóa
     key_matrix = input_key_matrix(n)
     print_matrix(key_matrix)
-    
+
     # Kiểm tra tính khả nghịch của ma trận khóa
-    try:
-        matrix_mod_inverse(key_matrix, 26)
-    except ValueError:
+    if not is_invertible(key_matrix):
         print("Ma trận khóa không khả nghịch. Vui lòng chọn ma trận khác.")
         return
-    
+
     # Nhập văn bản cần mã hóa
     plaintext = input("Nhập văn bản cần mã hóa: ")
-    
+
     # Mã hóa văn bản
     ciphertext = hill_encrypt(plaintext, key_matrix)
     print("Văn bản sau khi mã hóa:", ciphertext)
-    
+
     # Giải mã văn bản
     decrypted_text = hill_decrypt(ciphertext, key_matrix)
     print("Văn bản sau khi giải mã:", decrypted_text)

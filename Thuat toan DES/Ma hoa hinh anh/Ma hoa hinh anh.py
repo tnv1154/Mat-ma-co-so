@@ -283,15 +283,12 @@ def read_image(file_path):
     """Đọc file hình ảnh và trả về dữ liệu"""
     # Đọc hình ảnh
     image = cv2.imread(file_path)
-    if image is None:
-        raise ValueError(f"Không thể đọc file hình ảnh: {file_path}")
 
     # Lấy kích thước hình ảnh
     height, width, channels = image.shape
 
     # Chuyển hình ảnh thành mảng byte
     image_bytes = image.tobytes()
-
     return image_bytes, height, width, channels
 
 
@@ -360,15 +357,7 @@ def decrypt_image(encrypted_data, key, padding_length):
 def main():
     print("CHƯƠNG TRÌNH MÃ HÓA VÀ GIẢI MÃ HÌNH ẢNH BẰNG DES")
 
-    # Đường dẫn file input
-    input_file = input("Nhập đường dẫn file hình ảnh cần mã hóa: ")
-    if not input_file:
-        input_file = "input.jpg"  # Mặc định
-
-    # Kiểm tra file input có tồn tại không
-    if not os.path.exists(input_file):
-        print(f"Lỗi: File {input_file} không tồn tại!")
-        return
+    input_file = "input.png"
 
     # Nhập khóa
     key = input("Nhập khóa (8 ký tự): ")
@@ -380,41 +369,23 @@ def main():
         key = key[:8]
 
     print(f"Đang đọc file hình ảnh: {input_file}")
-    try:
-        image_data, height, width, channels = read_image(input_file)
-    except Exception as e:
-        print(f"Lỗi khi đọc file hình ảnh: {e}")
-        return
+    image_data, height, width, channels = read_image(input_file)
 
     print("Đang mã hóa hình ảnh...")
     encrypted_data, padding_length = encrypt_image(image_data, key)
 
     # Lưu file đã mã hóa
     encrypted_file = "encrypt.png"
-    try:
-        write_image(encrypted_file, encrypted_data, height, width, channels)
-        print(f"Đã lưu file hình ảnh đã mã hóa: {encrypted_file}")
-    except Exception as e:
-        print(f"Lỗi khi lưu file hình ảnh đã mã hóa: {e}")
-        # Lưu thông tin mã hóa để giải mã sau này
-        with open("encrypted_image.bin", "wb") as f:
-            f.write(encrypted_data)
-        print("Đã lưu dữ liệu mã hóa vào file: encrypted_image.bin")
+    write_image(encrypted_file, encrypted_data, height, width, channels)
+    print(f"Đã lưu file hình ảnh đã mã hóa: {encrypted_file}")
 
     print("Đang giải mã hình ảnh...")
     decrypted_data = decrypt_image(encrypted_data, key, padding_length)
 
     # Lưu file đã giải mã
     decrypted_file = "decrypt.png"
-    try:
-        write_image(decrypted_file, decrypted_data, height, width, channels)
-        print(f"Đã lưu file hình ảnh đã giải mã: {decrypted_file}")
-    except Exception as e:
-        print(f"Lỗi khi lưu file hình ảnh đã giải mã: {e}")
-
-    # Lưu thông tin kích thước và padding để sử dụng khi giải mã riêng biệt
-    with open("image_info.txt", "w") as f:
-        f.write(f"{height},{width},{channels},{padding_length}")
+    write_image(decrypted_file, decrypted_data, height, width, channels)
+    print(f"Đã lưu file hình ảnh đã giải mã: {decrypted_file}")
 
     print("Hoàn tất!")
 

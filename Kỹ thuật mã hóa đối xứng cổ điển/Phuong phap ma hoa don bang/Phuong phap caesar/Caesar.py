@@ -30,5 +30,3 @@ decrypted_text = decrypt_text(cipher_text, key)
 print(f"Bản mã : {cipher_text}")
 print(f"Bản rõ : {decrypted_text}")
 
-
-

@@ -167,7 +167,7 @@ def demo():
     """
     import os
 
-    input_file = "Ma hoa am thanh su dung a5-1/input.wav"  # File âm thanh gốc
+    input_file = "Mã hóa âm thanh sử dụng thuật toán a5-1/input.wav"  # File âm thanh gốc
     encrypted_file = "encrypted.wav"  # File âm thanh đã mã hóa
     decrypted_file = "decrypted.wav"  # File âm thanh giải mã
 

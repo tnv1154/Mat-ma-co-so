@@ -24,7 +24,7 @@ def decrypt_text(cipher_text, key):
 
 print("Phương pháp mã hóa caesar")
 plain_text = input("Nhập vào plain text: ")
-key = int(input("Nhập vào key: "))
+key = int(input("Nhập vào 1 số làm key (độ dịch): "))
 cipher_text = encrypt_text(plain_text, key)
 decrypted_text = decrypt_text(cipher_text, key)
 print(f"Bản mã : {cipher_text}")
